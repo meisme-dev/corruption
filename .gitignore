@@ -1,0 +1,9 @@
+Build
+.vscode
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles
+Makefile
+Game
+*vgcore*
+*kdev4*

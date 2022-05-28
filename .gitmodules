@@ -1,0 +1,15 @@
+[submodule "Libraries/bgfx"]
+	path = Libraries/bgfx
+	url = https://github.com/bkaradzic/bgfx
+[submodule "Libraries/bx"]
+	path = Libraries/bx
+	url = https://github.com/bkaradzic/bx
+[submodule "Libraries/bimg"]
+	path = Libraries/bimg
+	url = https://github.com/bkaradzic/bimg
+[submodule "Libraries/glfw"]
+	path = Libraries/glfw
+	url = https://github.com/glfw/glfw
+[submodule "Libraries/cpplocate"]
+	path = Libraries/cpplocate
+	url = https://github.com/cginternals/cpplocate

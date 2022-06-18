@@ -10,13 +10,13 @@
 #include <iostream>
 #include <filesystem>
 
-class Shader : public Asset<bgfx::ShaderHandle>{
+class Shader : public Asset<bgfx::ShaderHandle> {
 public:
     Shader();
-    bgfx::ShaderHandle create(std::string path);
+    bgfx::ShaderHandle create(std::string path, bgfx::RendererType::Enum renderer_type);
 
 private:
-    const bgfx::Memory *buf;
+    const bgfx::Memory* buf;
 };
 
 #endif

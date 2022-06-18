@@ -25,7 +25,7 @@
 
 class Game {
 public:
-    Game(int height, int width, GLFWwindow *window);
+    Game(int height, int width, GLFWwindow* window);
     ~Game();
     void loop();
 
@@ -33,13 +33,10 @@ private:
     int height;
     int width;
     GLFWwindow* window;
-    bgfx::ShaderHandle water_fsh;
-    bgfx::ShaderHandle water_vsh;
     std::shared_ptr<Texture> texture;
     std::shared_ptr<Shader> shader;
     bgfx::ProgramHandle shader_program;
-    bgfx::TextureHandle texture_handle[10];
-    bgfx::TextureHandle texture_handle_test;
+    bgfx::TextureHandle texture_handle[2];
     bgfx::UniformHandle s_texColor;
 };
 

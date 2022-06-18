@@ -8,9 +8,9 @@
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 
-class Sprite{
+class Sprite {
 public:
-    Sprite(bgfx::TextureHandle texture_handle, bgfx::ProgramHandle shader_program, uint64_t state, uint32_t flags);
+    Sprite(bgfx::TextureHandle texture_handle, bgfx::ProgramHandle shader_program, bgfx::UniformHandle uniform_handle, uint64_t state, uint32_t flags);
     ~Sprite();
     void render();
 
@@ -18,9 +18,9 @@ private:
     void create();
     bgfx::TextureHandle texture_handle;
     bgfx::ProgramHandle shader_program;
+    bgfx::UniformHandle uniform_handle;
     bgfx::VertexBufferHandle vbh;
     bgfx::IndexBufferHandle ibh;
-    bgfx::UniformHandle texture_uniform;
     uint64_t state;
     uint32_t flags;
 

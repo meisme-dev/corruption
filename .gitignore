@@ -10,3 +10,4 @@ Game
 build
 .idea
 CMakeLists.txt.user
+.cache

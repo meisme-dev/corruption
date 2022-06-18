@@ -12,12 +12,12 @@
 #include "Game.hpp"
 
 #if BX_PLATFORM_LINUX
-    #define GLFW_EXPOSE_NATIVE_X11
-	#define GLFW_EXPOSE_NATIVE_WAYLAND
+#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_WAYLAND
 #elif BX_PLATFORM_WINDOWS
-    #define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
 #elif BX_PLATFORM_OSX
-    #define GLFW_EXPOSE_NATIVE_COCOA
+#define GLFW_EXPOSE_NATIVE_COCOA
 #endif
 
 #include <GLFW/glfw3native.h>
@@ -31,9 +31,8 @@ public:
 private:
     void init();
     bgfx::Init bgfxInit;
-    GLFWwindow *window;
-    std::shared_ptr<Game> game;
-    char *path;
+    GLFWwindow* window;
+    char* path;
     int height;
     int width;
     const char* title;

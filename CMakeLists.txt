@@ -1,28 +1,49 @@
 cmake_minimum_required(VERSION 3.0.0)
+include(ProcessorCount)
 project(Corruption VERSION 0.1.0)
+
 file(GLOB Game
-     "Source/*.hpp"
-     "Source/*.cpp"
-	 "Source/Engine/*.cpp"
-	 "Source/Engine/*.hpp"
+	"Source/*.hpp"
+	"Source/*.cpp"
+	"Source/Engine/*.cpp"
+	"Source/Engine/*.hpp"
+	"Source/Player/*.cpp"
+	"Source/Player/*.hpp"
 )
 
-set(JOBS 4)
-set(CMAKE_CXX_FLAGS "-g -O3")
+set(formats "spirv" "440" "320_es")
+
+file(GLOB fragment
+	"Source/Assets/Shaders/*.fsh"
+)
+
+file(GLOB vertex
+	"Source/Assets/Shaders/*.vsh"
+)
+
+ProcessorCount(JOBS)
+set(CMAKE_CXX_FLAGS "-Ofast")
+if(NOT ${JOBS} EQUAL 0)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -J${JOBS}")
+endif()
+
 add_executable(Game ${Game})
 
 find_package(Git QUIET)
+
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
-    endif()
+	option(GIT_SUBMODULE "Check submodules during build" ON)
+
+	if(GIT_SUBMODULE)
+		message(STATUS "Submodule update")
+		execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+			WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries
+			RESULT_VARIABLE GIT_SUBMOD_RESULT)
+
+		if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+			message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+		endif()
+	endif()
 endif()
 
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/Libraries/bgfx")
@@ -82,6 +103,7 @@ endif()
 execute_process(COMMAND make ${PLATFORM}-${RELEASE_TYPE}${ARCH} -C bgfx -j${JOBS}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries
 	RESULT_VARIABLE BGFX_BUILD_RESULT)
+
 if(NOT BGFX_BUILD_RESULT EQUAL "0")
 	message(FATAL_ERROR "bgfx build failed")
 endif()
@@ -89,6 +111,7 @@ endif()
 execute_process(COMMAND make ${PLATFORM}-${RELEASE_TYPE}${ARCH} -C bimg -j${JOBS}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries
 	RESULT_VARIABLE BIMG_BUILD_RESULT)
+
 if(NOT BIMG_BUILD_RESULT EQUAL "0")
 	message(FATAL_ERROR "bimg build failed")
 endif()
@@ -96,6 +119,7 @@ endif()
 execute_process(COMMAND make ${PLATFORM}-${RELEASE_TYPE}${ARCH} -C bx -j${JOBS}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries
 	RESULT_VARIABLE BX_BUILD_RESULT)
+
 if(NOT BX_BUILD_RESULT EQUAL "0")
 	message(FATAL_ERROR "bx build failed")
 endif()
@@ -103,6 +127,7 @@ endif()
 execute_process(COMMAND cmake -S . -B .build -DGLFW_USE_WAYLAND=ON
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries/glfw
 	RESULT_VARIABLE GLFW_BUILD_RESULT)
+
 if(NOT GLFW_BUILD_RESULT EQUAL "0")
 	message(FATAL_ERROR "glfw build failed")
 endif()
@@ -110,6 +135,7 @@ endif()
 execute_process(COMMAND make -C .build -j${JOBS}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries/glfw
 	RESULT_VARIABLE GLFW_BUILD_RESULT)
+
 if(NOT GLFW_BUILD_RESULT EQUAL "0")
 	message(FATAL_ERROR "glfw build failed")
 endif()
@@ -117,6 +143,7 @@ endif()
 execute_process(COMMAND cmake -S . -B .build
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries/cpplocate
 	RESULT_VARIABLE CPPLOCATE_BUILD_RESULT)
+
 if(NOT CPPLOCATE_BUILD_RESULT EQUAL "0")
 	message(FATAL_ERROR "cpplocate build failed")
 endif()
@@ -124,6 +151,7 @@ endif()
 execute_process(COMMAND make -C .build -j${JOBS}
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries/cpplocate
 	RESULT_VARIABLE CPPLOCATE_BUILD_RESULT)
+
 if(NOT CPPLOCATE_BUILD_RESULT EQUAL "0")
 	message(FATAL_ERROR "cpplocate build failed")
 endif()
@@ -131,16 +159,64 @@ endif()
 execute_process(COMMAND /usr/bin/env bash -c \"${PROJECT_SOURCE_DIR}/Libraries/box2d/build${EXTENSION}\"
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries/box2d
 	RESULT_VARIABLE BOX2D_BUILD_RESULT)
+
 if(NOT BOX2D_BUILD_RESULT EQUAL "0")
 	message(FATAL_ERROR "box2d build failed")
 endif()
 
-execute_process(COMMAND cp -r ${PROJECT_SOURCE_DIR}/Assets ${CMAKE_CURRENT_BINARY_DIR}/Assets
+execute_process(COMMAND cp -r ${PROJECT_SOURCE_DIR}/Source/Assets ${CMAKE_CURRENT_BINARY_DIR}/
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 	RESULT_VARIABLE ASSETS_COPY_RESULT)
+
 if(NOT ASSETS_COPY_RESULT EQUAL "0")
 	message(FATAL_ERROR "Assets copy failed")
 endif()
+
+if(${PLATFORM} EQUAL "windows")
+	list(APPEND formats "s_5_0")
+endif()
+
+if(${PLATFORM} EQUAL "osx")
+	list(APPEND formats "metal")
+endif()
+
+foreach(format ${formats})
+	foreach(file ${fragment})
+		get_filename_component(file_name ${file} NAME)
+		execute_process(
+			COMMAND ${PROJECT_SOURCE_DIR}/Libraries/bgfx/.build/${PLATFORM}${ARCH}_${TARGET}/bin/shaderc${RELEASE_TYPE_UPPER}
+			-f ${file}
+			--platform ${PLATFORM}
+			-i ${PROJECT_SOURCE_DIR}/Libraries/bgfx/src
+			--type fragment
+			-o ${CMAKE_CURRENT_BINARY_DIR}/Assets/Shaders/${format}/${file_name}.bin
+			-p ${format}
+			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+			RESULT_VARIABLE SHADER_COMPILATION_RESULT)
+
+		if(NOT SHADER_COMPILATION_RESULT EQUAL "0")
+			message(FATAL_ERROR "Shader compilation failed at ${file}, format ${format}")
+		endif()
+	endforeach(file ${fragment})
+
+	foreach(file ${vertex})
+		get_filename_component(file_name ${file} NAME)
+		execute_process(
+			COMMAND ../Libraries/bgfx/.build/${PLATFORM}${ARCH}_${TARGET}/bin/shaderc${RELEASE_TYPE_UPPER}
+			-f ${file}
+			--platform ${PLATFORM}
+			-i ../Libraries/bgfx/src
+			--type vertex
+			-o Assets/Shaders/${format}/${file_name}.bin
+			-p ${format}
+			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+			RESULT_VARIABLE SHADER_COMPILATION_RESULT)
+
+		if(NOT SHADER_COMPILATION_RESULT EQUAL "0")
+			message(FATAL_ERROR "Shader compilation failed at ${file}, format ${format}")
+		endif()
+	endforeach(file ${vertex})
+endforeach(format ${formats})
 
 target_link_directories(Game PRIVATE ${PROJECT_SOURCE_DIR}/Libraries/bgfx/.build/${PLATFORM}${ARCH}_${TARGET}/bin/)
 target_link_directories(Game PRIVATE ${PROJECT_SOURCE_DIR}/Libraries/cpplocate/.build/)

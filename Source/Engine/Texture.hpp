@@ -15,14 +15,14 @@
 #include <string>
 #include <iostream>
 
-class Texture : public Asset<bgfx::TextureHandle>{
+class Texture : public Asset<bgfx::TextureHandle> {
 public:
     Texture();
-    bgfx::TextureHandle create(std::string path, 
-    int height, int width, bool has_mips, int layers, bgfx::TextureFormat::Enum texture_format, uint64_t flags);
+    bgfx::TextureHandle create(std::string path,
+        int height, int width, bool has_mips, int layers, bgfx::TextureFormat::Enum texture_format, uint64_t flags);
 
 private:
-    const bgfx::Memory *buf;
+    const bgfx::Memory* buf;
 };
 
 #endif

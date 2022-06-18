@@ -5,7 +5,7 @@
 
 #include <bgfx/bgfx.h>
 
-class Render{
+class Render {
 public:
     Render();
     ~Render();

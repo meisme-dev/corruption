@@ -8,7 +8,7 @@ file(GLOB Game
 )
 
 set(JOBS 4)
-set(CMAKE_CXX_FLAGS "-g -O0")
+set(CMAKE_CXX_FLAGS "-g -O3")
 add_executable(Game ${Game})
 
 find_package(Git QUIET)
@@ -45,6 +45,10 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/Libraries/cpplocate")
 	message(FATAL_ERROR "cpplocate submodule not found")
 endif()
 
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/Libraries/box2d")
+	message(FATAL_ERROR "box2d submodule not found")
+endif()
+
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 	set(RELEASE_TYPE "debug")
 	set(RELEASE_TYPE_UPPER "Debug")
@@ -56,12 +60,15 @@ endif()
 if(UNIX)
 	set(PLATFORM "linux")
 	set(TARGET "gcc")
+	set(EXTENSION ".sh")
 elseif(APPLE)
 	set(PLATFORM "osx")
 	set(TARGET "clang")
+	set(EXTENSION ".sh")
 elseif(WIN32)
 	set(PLATFORM "windows")
 	set(TARGET "msvc")
+	set(EXTENSION ".bat")
 else()
 	message(FATAL_ERROR "Unsupported platform")
 endif()
@@ -93,7 +100,7 @@ if(NOT BX_BUILD_RESULT EQUAL "0")
 	message(FATAL_ERROR "bx build failed")
 endif()
 
-execute_process(COMMAND cmake -S . -B .build
+execute_process(COMMAND cmake -S . -B .build -DGLFW_USE_WAYLAND=ON
 	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries/glfw
 	RESULT_VARIABLE GLFW_BUILD_RESULT)
 if(NOT GLFW_BUILD_RESULT EQUAL "0")
@@ -119,6 +126,13 @@ execute_process(COMMAND make -C .build -j${JOBS}
 	RESULT_VARIABLE CPPLOCATE_BUILD_RESULT)
 if(NOT CPPLOCATE_BUILD_RESULT EQUAL "0")
 	message(FATAL_ERROR "cpplocate build failed")
+endif()
+
+execute_process(COMMAND /usr/bin/env bash -c \"${PROJECT_SOURCE_DIR}/Libraries/box2d/build${EXTENSION}\"
+	WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/Libraries/box2d
+	RESULT_VARIABLE BOX2D_BUILD_RESULT)
+if(NOT BOX2D_BUILD_RESULT EQUAL "0")
+	message(FATAL_ERROR "box2d build failed")
 endif()
 
 execute_process(COMMAND cp -r ${PROJECT_SOURCE_DIR}/Assets ${CMAKE_CURRENT_BINARY_DIR}/Assets
@@ -132,10 +146,12 @@ target_link_directories(Game PRIVATE ${PROJECT_SOURCE_DIR}/Libraries/bgfx/.build
 target_link_directories(Game PRIVATE ${PROJECT_SOURCE_DIR}/Libraries/cpplocate/.build/)
 target_link_directories(Game PRIVATE ${PROJECT_SOURCE_DIR}/Libraries/glfw/.build/src/)
 target_link_directories(Game PRIVATE ${PROJECT_SOURCE_DIR}/Libraries/bgfx/examples/common)
+target_link_directories(Game PRIVATE ${PROJECT_SOURCE_DIR}/Libraries/box2d/build)
 target_include_directories(Game PUBLIC ${PROJECT_SOURCE_DIR}/Libraries/bgfx/include)
 target_include_directories(Game PUBLIC ${PROJECT_SOURCE_DIR}/Libraries/bx/include)
 target_include_directories(Game PUBLIC ${PROJECT_SOURCE_DIR}/Libraries/bimg/include)
 target_include_directories(Game PUBLIC ${PROJECT_SOURCE_DIR}/Libraries/glfw/include)
 target_include_directories(Game PUBLIC ${PROJECT_SOURCE_DIR}/Libraries/cpplocate/.build/source/cpplocate/include)
 target_include_directories(Game PUBLIC ${PROJECT_SOURCE_DIR}/Libraries/cpplocate/source/cpplocate/include)
+target_include_directories(Game PUBLIC ${PROJECT_SOURCE_DIR}/Libraries/box2d/include)
 target_link_libraries(Game bgfx${RELEASE_TYPE_UPPER} bimg${RELEASE_TYPE_UPPER} bx${RELEASE_TYPE_UPPER} glfw3 GL X11 cpplocate)

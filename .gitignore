@@ -7,3 +7,6 @@ Makefile
 Game
 *vgcore*
 *kdev4*
+build
+.idea
+CMakeLists.txt.user

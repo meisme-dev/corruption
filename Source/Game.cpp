@@ -98,9 +98,8 @@ void Game::loop() {
 		}
 		bgfx::setTexture(0, s_texColor, texture_handle_test, BGFX_SAMPLER_POINT | BGFX_SAMPLER_UVW_CLAMP);
 		float mtx[16];
-		bx::mtxRotateZ(mtx, mvx * 0.5f);
-		bx::mtxTranslate(mtx, mvx, mvy, 0.0f);
-		bx::mtxScale(mtx, 0.5f, 0.5f, 0.5f);
+		bx::mtxSRT(mtx, 0.5f, 0.5f, 0.5f, 0.0f, 0.0f, mvx * 0.75f, mvx, mvy, 0.0f);
+				        //Scale           //Rotate               //Translate
 		bgfx::setTransform(mtx);
 		sprite->render();
 		bgfx::frame();

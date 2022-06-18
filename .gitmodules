@@ -13,3 +13,6 @@
 [submodule "Libraries/cpplocate"]
 	path = Libraries/cpplocate
 	url = https://github.com/cginternals/cpplocate
+[submodule "Libraries/box2d"]
+	path = Libraries/box2d
+	url = https://github.com/erincatto/box2d

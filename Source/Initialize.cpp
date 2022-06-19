@@ -32,7 +32,6 @@ Initialize::Initialize(int height, int width, const char* title) {
 	bgfxInit.resolution.height = height;
 	bgfxInit.resolution.reset = BGFX_RESET_VSYNC;
 	bgfxInit.debug = BGFX_DEBUG_TEXT;
-	bgfxInit.type = bgfx::RendererType::Vulkan;
 	init();
 }
 

@@ -22,6 +22,7 @@
 #include "Engine/Texture.hpp"
 #include "Engine/Shader.hpp"
 #include "Engine/Sprite.hpp"
+#include "Engine/AnimatedSprite.hpp"
 
 class Game {
 public:

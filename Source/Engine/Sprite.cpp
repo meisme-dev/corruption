@@ -1,5 +1,9 @@
 #include "Sprite.hpp"
 
+Sprite::Sprite(){
+	
+}
+
 Sprite::Sprite(bgfx::TextureHandle texture_handle, bgfx::ProgramHandle shader_program, bgfx::UniformHandle uniform_handle, uint64_t state, uint32_t flags) :
 	texture_handle(texture_handle),
 	shader_program(shader_program),

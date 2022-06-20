@@ -11,13 +11,12 @@
 class Sprite {
 public:
     Sprite();
-    Sprite(bgfx::TextureHandle texture_handle, bgfx::ProgramHandle shader_program, bgfx::UniformHandle uniform_handle, uint64_t state, uint32_t flags);
+    Sprite(bgfx::ProgramHandle shader_program, bgfx::UniformHandle uniform_handle, uint64_t state, uint32_t flags);
     ~Sprite();
-    void render();
+    void render(bgfx::TextureHandle texture_handle);
 
 protected:
     void create();
-    bgfx::TextureHandle texture_handle;
     bgfx::ProgramHandle shader_program;
     bgfx::UniformHandle uniform_handle;
     bgfx::VertexBufferHandle vbh;

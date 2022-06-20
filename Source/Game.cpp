@@ -11,7 +11,7 @@ Game::Game(int height, int width, GLFWwindow* window) :
 	bgfx::ShaderHandle vsh_handle = shader->create("default.vsh.bin", renderer_type);
 	shader_program = bgfx::createProgram(vsh_handle, fsh_handle, false);
 	uint64_t flags = BGFX_TEXTURE_NONE;
-	texture_handle[0] = texture->create("/Assets/Textures/ball.png", 0, 0, false, 1, bgfx::TextureFormat::RGBA8, flags);
+	texture_handle[0] = texture->create("/Assets/Textures/ball_alt.png", 0, 0, false, 1, bgfx::TextureFormat::RGBA8, flags);
 	texture_handle[1] = texture->create("/Assets/Textures/bg.png", 0, 0, false, 1, bgfx::TextureFormat::RGBA8, flags);
 	bgfx::destroy(fsh_handle);
 	bgfx::destroy(vsh_handle);
@@ -28,15 +28,13 @@ void Game::loop() {
 	float mvx = 0, mvy = 0;
 	bool jump = false;
 	std::unique_ptr<Sprite> sprite(
-		new Sprite(texture_handle[0],
-			shader_program,
+		new Sprite(shader_program,
 			s_texColor,
 			BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A,
 			BGFX_SAMPLER_POINT | BGFX_SAMPLER_UVW_CLAMP));
 
 	std::unique_ptr<Sprite> sprite_2(
-		new Sprite(texture_handle[1],
-			shader_program,
+		new Sprite(shader_program,
 			s_texColor,
 			BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A,
 			BGFX_SAMPLER_POINT | BGFX_SAMPLER_UVW_CLAMP));
@@ -54,10 +52,10 @@ void Game::loop() {
 		bgfx::setViewTransform(0, view, proj);
 		bgfx::setViewRect(0, 0, 0, width, height);
 
-		if ((glfwGetKey(window, GLFW_KEY_RIGHT) || glfwGetKey(window, GLFW_KEY_D)) == GLFW_PRESS) {
+		if ((glfwGetKey(window, GLFW_KEY_RIGHT) || glfwGetKey(window, GLFW_KEY_D)) == GLFW_PRESS && mvy < 0.5) {
 			mvx += delta / 100.0f;
 		}
-		if ((glfwGetKey(window, GLFW_KEY_LEFT) || glfwGetKey(window, GLFW_KEY_A)) == GLFW_PRESS) {
+		if ((glfwGetKey(window, GLFW_KEY_LEFT) || glfwGetKey(window, GLFW_KEY_A)) == GLFW_PRESS && mvy < 0.5) {
 			mvx -= delta / 100.0f;
 		}
 		if ((glfwGetKey(window, GLFW_KEY_UP) || glfwGetKey(window, GLFW_KEY_W)) == GLFW_PRESS && mvy < 3.0f) {
@@ -87,14 +85,17 @@ void Game::loop() {
 		if (counter > 9) {
 			counter = 0;
 		}
-
+		framebuffer[0] = bgfx::createFrameBuffer(width, height, bgfx::TextureFormat::BGRA8, BGFX_SAMPLER_UVW_CLAMP);
+		bgfx::setViewFrameBuffer(0, framebuffer[0]);
+		bgfx::TextureHandle test = bgfx::getTexture(framebuffer[0]);
 		float mtx[16];
 		bx::mtxSRT(mtx, 5.32f, 2.0f, 1.0f, 0.0f, 0.0f, 0.0f, -(mvx * 0.75f), 0.0f, -1.0f);
 		bgfx::setTransform(mtx);
-		sprite_2->render();
+		sprite_2->render(texture_handle[1]);
 		bx::mtxSRT(mtx, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, mvx * 0.5f, 0.0f, -1.5f + mvy, 0.0f);
 		bgfx::setTransform(mtx);
-		sprite->render();
+		sprite->render(texture_handle[0]);
+		//pass current framebuffer to shader
 		//Call bgfx::frame twice to avoid flickering
 		bgfx::frame();
 		bgfx::frame();

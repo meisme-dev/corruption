@@ -38,6 +38,8 @@ private:
     std::shared_ptr<Shader> shader;
     bgfx::ProgramHandle shader_program;
     bgfx::TextureHandle texture_handle[2];
+    bgfx::TextureHandle current_framebuffer;
+    bgfx::FrameBufferHandle framebuffer[2];
     bgfx::UniformHandle s_texColor;
 };
 
